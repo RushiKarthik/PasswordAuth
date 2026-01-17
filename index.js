@@ -6,7 +6,14 @@ const cors = require('cors');
 const mysql = require('mysql2');    
 app.use(cors());  
 app.use(express.static('public')); 
-app.use(express.json());  
+app.use(express.json()); 
+const { Pool } = require('pg');
+
+// Use the Environment Variable Render gives you
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false } // Required for Render cloud connections
+}); 
 
 app.use(bodyParser.urlencoded({ extended: true}));  
 const db = mysql.createPool({
