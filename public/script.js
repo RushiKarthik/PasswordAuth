@@ -2,11 +2,19 @@ let isLogin = true;
 
 function toggleForm() {
     isLogin = !isLogin;
-    document.getElementById('form-title').innerText = isLogin ? 'Login' : 'Register';
-    document.getElementById('main-btn').innerText = isLogin ? 'Login' : 'Register';
-    document.getElementById('toggle-text').innerHTML = isLogin 
-        ? "Don't have an account? <span onclick='toggleForm()'>Register</span>" 
-        : "Already have an account? <span onclick='toggleForm()'>Login</span>";
+    const formTitle = document.getElementById('form-title');
+    const mainBtn = document.getElementById('main-btn');
+    const toggleText = document.getElementById('toggle-text');
+    const messageEl = document.getElementById('message');
+
+    // Clear previous messages when switching
+    messageEl.innerText = "";
+
+    formTitle.innerText = isLogin ? 'Login' : 'Register';
+    mainBtn.innerText = isLogin ? 'Login' : 'Register';
+    toggleText.innerHTML = isLogin 
+        ? "Don't have an account? <span onclick='toggleForm()' style='cursor:pointer; color:blue;'>Register</span>" 
+        : "Already have an account? <span onclick='toggleForm()' style='cursor:pointer; color:blue;'>Login</span>";
 }
 
 async function handleSubmit() {
@@ -14,32 +22,57 @@ async function handleSubmit() {
     const password = document.getElementById('password').value;
     const messageEl = document.getElementById('message');
 
-    // Determine which endpoint to hit based on the mode
+    if (!username || !password) {
+        messageEl.style.color = "red";
+        messageEl.innerText = "Please fill in all fields";
+        return;
+    }
+
+    // FIX: Use the 'isLogin' variable to pick the right door
     const endpoint = isLogin ? '/login' : '/register';
 
     try {
-        // Remove the localhost part entirely
-const response = await fetch('/login', {  
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
+        messageEl.style.color = "blue";
+        messageEl.innerText = "Connecting...";
+
+        // FIX: We use the 'endpoint' variable here so it works for both forms
+       // Add http://localhost:3000 back so it talks to your local server
+const response = await fetch(`http://localhost:3000${endpoint}`, {  
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+});  
 
         const data = await response.text();
 
         if (response.status === 200) {
             messageEl.style.color = "green";
             messageEl.innerText = isLogin ? "Login Successful!" : "Registration Successful!";
-            if(isLogin){  
-            window.location.href = 'welcome.html';
-          }  
-}
-       
-             else {
+            
+            // Redirect only on successful login
+            if (isLogin) {  
+                setTimeout(() => {
+                    window.location.href = 'welcome.html';
+                }, 1000);
+            } else {
+                // If they just registered, switch them to the login form
+                setTimeout(() => {
+                    toggleForm();
+                    messageEl.style.color = "green";
+                    messageEl.innerText = "Now please Login with your new account";
+                }, 2000);
+            }
+        } else {
             messageEl.style.color = "red";
-            messageEl.innerText = data;
+            messageEl.innerText = data; // Show the error from the server
         }  
     } catch (error) {
+        console.error("Fetch Error:", error);
+        messageEl.style.color = "red";
         messageEl.innerText = "Error connecting to server";
     }
-}  
+}   
+window.onload = function() {
+    document.getElementById('username').value = "";
+    document.getElementById('password').value = "";
+}; 

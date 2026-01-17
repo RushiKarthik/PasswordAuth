@@ -7,24 +7,6 @@ const mysql = require('mysql2');
 app.use(cors());  
 app.use(express.static('public')); 
 app.use(express.json()); 
-const { Pool } = require('pg');
-
-// Use the Environment Variable Render gives you
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false } // Required for Render cloud connections
-}); 
-// This creates the table automatically if it doesn't exist
-pool.query(`
-  CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
-  );
-`, (err, res) => {
-  if (err) console.error("Error creating table:", err);
-  else console.log("Users table is ready!");
-});
 
 app.use(bodyParser.urlencoded({ extended: true}));  
 const db = mysql.createPool({
