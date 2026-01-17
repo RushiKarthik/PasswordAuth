@@ -18,7 +18,8 @@ async function handleSubmit() {
     const endpoint = isLogin ? '/login' : '/register';
 
     try {
-        const response = await fetch(`http://localhost:3000${endpoint}`, {
+        // Remove the localhost part entirely
+const response = await fetch('/login', {  
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
